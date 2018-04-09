@@ -1,5 +1,5 @@
 # LoadingViewExp
 
-![LoadingViewExp](gif/loading.gif)
+![LoadingViewExp](art/loading.gif)
 
-![LoadingViewExp](gif/loading2.gif)
+![LoadingViewExp](art/loading2.gif)

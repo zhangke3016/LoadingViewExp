@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RotateLoadingView">
+        <!-- loading 宽度-->
+        <attr name="loading_width" format="dimension"/>
+        <!-- loading 颜色 -->
+        <attr name="loading_color" format="color"/>
+        <!-- 阴影偏移度-->
+        <attr name="shadow_position" format="integer"/>
+        <!-- 旋转速度-->
+        <attr name="loading_speed" format="integer"/>
+        <!-- 中心图片-->
+        <attr name="loading_icon" format="integer|reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="LoadingBallView">
+        <!-- ball 颜色 -->
+        <attr name="ball_color" format="color"/>
+    </declare-styleable>
+</resources>

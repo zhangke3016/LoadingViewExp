@@ -18,7 +18,7 @@ public class BallUtil {
      * @param handle_len_rate
      * @param maxDistance
      */
-    public static void metaball(Canvas canvas, LoadingBallView.Circle circle1, LoadingBallView.Circle circle2, Paint paint,
+    public static void metaball(Canvas canvas, Circle circle1, Circle circle2, Paint paint,
                                 float v, float handle_len_rate, float maxDistance) {
 
         RectF ball1 = new RectF();
@@ -124,5 +124,12 @@ public class BallUtil {
                 x, y
         };
     }
-
+    public static class Circle {
+        public float[] center;
+        public float radius;
+        public Circle(float[] center, float radius) {
+            this.center = center;
+            this.radius = radius;
+        }
+    }
 }

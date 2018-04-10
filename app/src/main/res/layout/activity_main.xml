@@ -17,10 +17,12 @@
 
     <com.loading.viewexp.view.LoadingBallView
         android:id="@+id/loadingview"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        app:ball_color="#e9e9e9"
-        android:layout_centerInParent="true" />
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:ball_color="#FFA200"
+        app:max_ball_radius="3dp"
+        app:max_ball_count="3"
+        android:layout_centerInParent="true"/>
 
 
 </RelativeLayout>

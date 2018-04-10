@@ -16,5 +16,8 @@
     <declare-styleable name="LoadingBallView">
         <!-- ball 颜色 -->
         <attr name="ball_color" format="color"/>
+        <!-- 最大ball 半径-->
+        <attr name="max_ball_radius" format="dimension"/>
+        <attr name="max_ball_count" format="integer"/>
     </declare-styleable>
 </resources>

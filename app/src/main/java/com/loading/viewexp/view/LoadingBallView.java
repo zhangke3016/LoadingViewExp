@@ -2,6 +2,7 @@ package com.loading.viewexp.view;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -23,13 +24,15 @@ import java.util.Random;
  * Created by zhangke on 2018/4/8.
  */
 public class LoadingBallView extends View{
+
+    private static final int MAX_RANDOM_NUM = 6;
+
     //绘制旋转的阴影
     private Paint mPaint;
 
-    private static final int MAX_BALLS_COUNT = 5;
-    private static final int MAX_BALLS_NUM = 6;
+    private int maxBallsCount = 5;
     //小球递减量
-    private static final int MAX_BALL_REDUCE_NUM = 5;
+    private int maxBallReduceNum = 3;
 
     private Path mPath;
 
@@ -44,12 +47,14 @@ public class LoadingBallView extends View{
     //记录圆球运动过的长度
     private float mDisLen = 0;
     //最大圆球的半径
-    private int maxBallsRadius = 30;
+    private float maxBallsRadius = 30;
     //旋转的最大距离
     private float maxLen;
 
     private boolean mChangeBall = false;
     private int mColor;
+
+    private boolean isStart = true;
     public LoadingBallView(Context context) {
         this(context,null);
     }
@@ -63,6 +68,8 @@ public class LoadingBallView extends View{
         if (null != attrs) {
             TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.LoadingBallView);
             mColor = typedArray.getColor(R.styleable.LoadingBallView_ball_color, Color.parseColor("#FFA200"));
+            maxBallsRadius = typedArray.getDimension(R.styleable.LoadingBallView_max_ball_radius,maxBallsRadius);
+            maxBallsCount = typedArray.getInt(R.styleable.LoadingBallView_max_ball_count, maxBallsCount);
             typedArray.recycle();
         }
         init();
@@ -77,20 +84,22 @@ public class LoadingBallView extends View{
 
         mPath = new Path();
         mPathMeasure = new PathMeasure();
+
+        maxBallReduceNum = (int) ((maxBallsRadius - maxBallsRadius/maxBallsCount)/ maxBallsCount);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         if (mRectF == null){
             mRectF = new RectF(0,0,getMeasuredWidth(),getMeasuredHeight());
-            mPath.addCircle(mRectF.centerX(),mRectF.centerY(),mRectF.width()/2- maxBallsRadius - MAX_BALLS_NUM, Path.Direction.CW);
+            mPath.addCircle(mRectF.centerX(),mRectF.centerY(),mRectF.width()/2- maxBallsRadius - MAX_RANDOM_NUM, Path.Direction.CW);
             mPathMeasure.setPath(mPath,false);
-            mDistances = getMeasuredWidth() / 5;
+            mDistances = mPathMeasure.getLength() / maxBallsCount / 5;
         }
 
         canvas.save();
         canvas.rotate(-90,mRectF.centerX(),mRectF.centerY());
-        for (int i = 0; i < MAX_BALLS_COUNT; i++) {
+        for (int i = 0; i < maxBallsCount; i++) {
             float dis = mDisLen - i * mDistances;
             if (dis < 0){
                 continue;
@@ -101,6 +110,10 @@ public class LoadingBallView extends View{
             drawPathToCanvas(canvas,dis,i);
         }
         canvas.restore();
+        if (isStart){
+            isStart = !isStart;
+            start();
+        }
     }
 
     /**
@@ -111,43 +124,43 @@ public class LoadingBallView extends View{
      */
     private void drawPathToCanvas(Canvas canvas,float distances,int i){
         mPathMeasure.getPosTan(distances, mPos,null);
-        if (i == MAX_BALLS_COUNT -1){
-            //后两个一样大
-            i = MAX_BALLS_COUNT - 2;
-        }
+//        if (i == maxBallsCount -1){
+//            //后两个一样大
+//            i = maxBallsCount - 2;
+//        }
 
-        int radius = maxBallsRadius - MAX_BALL_REDUCE_NUM * i;
+        float radius = maxBallsRadius - maxBallReduceNum * i;
 
         canvas.drawCircle(mPos[0], mPos[1], radius, mPaint);
         float[] pos = new float[2];
-        if (distances < mDistances && distances>0 && distances < mDistances / 5f && i > 0){
+        if (distances < mDistances && distances>0 && distances < maxBallsRadius && i > 0){
 
             mPathMeasure.getPosTan(0, pos,null);
-            mPathMeasure.getPosTan(mDistances, mPos,null);
+            mPathMeasure.getPosTan(mDistances/2, mPos,null);
 
-            BallUtil.metaball(canvas,new Circle(pos,radius-MAX_BALL_REDUCE_NUM),
-                    new Circle(mPos,radius),mPaint,
-                    mv, mHandleLenRate,mDistances);
+            BallUtil.metaball(canvas,new BallUtil.Circle(pos,radius- maxBallReduceNum),
+                    new BallUtil.Circle(mPos,radius),mPaint,
+                    mv, mHandleLenRate,mDistances/2);
         }else if (distances == mPathMeasure.getLength()){
             //当前滑过的长度 - 整个圆长度  %  每段距离
             float dis = (mDisLen - distances) % mDistances;
-            if (dis>0 && dis < mDistances/5f){
+            if (dis>0 && dis < maxBallsRadius){
                 int count = (int) ((maxLen - mDisLen) / mDistances);
-                int index = MAX_BALLS_COUNT - 1 - count;
-                if (index == MAX_BALLS_COUNT -1){
+                int index = maxBallsCount - 1 - count;
+                if (index == maxBallsCount -1){
                     return;
                 }
                 mPathMeasure.getPosTan(0, pos,null);
                 mPathMeasure.getPosTan(mPathMeasure.getLength() - mDistances/2, mPos,null);
 
-                BallUtil.metaball(canvas,new Circle(pos, maxBallsRadius - index * MAX_BALL_REDUCE_NUM),
-                        new Circle(mPos, maxBallsRadius - (index+1) * MAX_BALL_REDUCE_NUM),mPaint,
+                BallUtil.metaball(canvas,new BallUtil.Circle(pos, maxBallsRadius - index * maxBallReduceNum),
+                        new BallUtil.Circle(mPos, maxBallsRadius - (index+1) * maxBallReduceNum),mPaint,
                         mv, mHandleLenRate,mDistances/2);
             }
             mChangeBall = !mChangeBall;
             if (mChangeBall) {
                 mPathMeasure.getPosTan(0, pos,null);
-                canvas.drawCircle(pos[0], pos[1], maxBallsRadius +new Random().nextInt(MAX_BALLS_NUM), mPaint);
+                canvas.drawCircle(pos[0], pos[1], maxBallsRadius +new Random().nextInt(MAX_RANDOM_NUM), mPaint);
             }
         }
     }
@@ -155,8 +168,8 @@ public class LoadingBallView extends View{
     /**
      * 一圈动画执行时间
      */
-    public void start( ){
-        maxLen = mPathMeasure.getLength() + mDistances * MAX_BALLS_COUNT;
+    public void start(){
+        maxLen = mPathMeasure.getLength() + mDistances * maxBallsCount;
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(0,maxLen);
         valueAnimator.setDuration(2000);
         valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -170,14 +183,4 @@ public class LoadingBallView extends View{
         });
         valueAnimator.start();
     }
-
-    public static class Circle {
-        public float[] center;
-        public float radius;
-        public Circle(float[] center, float radius) {
-            this.center = center;
-            this.radius = radius;
-        }
-    }
-
 }
